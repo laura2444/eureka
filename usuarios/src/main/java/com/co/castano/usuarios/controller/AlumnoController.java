@@ -3,19 +3,54 @@ package com.co.castano.usuarios.controller;
 import com.co.castano.usuarios.entity.Alumno;
 import com.co.castano.usuarios.service.AlumnoService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/alumnos")
+@RequestMapping("/usuarios")
 public class AlumnoController {
 
     @Autowired
     AlumnoService service;
+
+    // Inyectar la variable de entorno 'BALANCEADOR_TEST' en el controlador
+    @Value("${config.balanceador.test}")
+    private String balanceadorTest;
+
+    /* BALANCEADOR TEST
+
+    Un balanceador de carga es un componente que distribuye de forma equitativa el tráfico de red o las solicitudes entre múltiples instancias de un servicio o servidor
+
+
+    Las múltiples instancias de un servicio son copias independientes del mismo servicio (o aplicación) que se ejecutan en paralelo en diferentes entornos
+    (como servidores, máquinas virtuales, o contenedores). Cada instancia es capaz de atender solicitudes de manera independiente, pero todas funcionan juntas
+    para aumentar la capacidad y disponibilidad del sistema en general.
+
+
+    el balanceador test utiliza una variable inyectada (config.balanceador.test) en el controlador para mostrar qué instancia específica del servicio está respondiendo
+    a cada solicitud. Esto permite validar que el balanceador de carga distribuye correctamente las solicitudes entre distintas instancias.
+
+    Por ejemplo, si tienes dos instancias del servicio "usuarios" y ejecutas repetidamente el endpoint /balanceador-test, deberías ver que la respuesta alterna entre las dos
+     instancias, indicando que el balanceador está funcionando
+     *
+    * */
+
+    @GetMapping("/balanceador-test")
+    public ResponseEntity<?> balanceadorTest(){
+        Map<String, Object> response= new HashMap<String, Object>();
+        response.put("balanceador",balanceadorTest); //variable que identifica de qué instancia específica de tu servicio "usuarios" proviene la respuesta, permitiéndote saber qué instancia está siendo utilizada en ese momento a través del balanceador de carga.
+        response.put("alumno",service.findAll());//Agregamos la lista de alumnos
+
+        return ResponseEntity.ok().body(response); // Retornamos la respuesta HTTP 200 con el body
+    }
+
 
     @GetMapping
     public ResponseEntity<?> listarAlumno(){
