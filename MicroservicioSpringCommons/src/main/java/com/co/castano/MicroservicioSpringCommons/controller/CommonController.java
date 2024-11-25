@@ -1,10 +1,9 @@
-package com.co.castano.usuarios.controller;
+package com.co.castano.MicroservicioSpringCommons.controller;
 
-import com.co.castano.MicroservicioCommonsService.entity.Alumno;
-import com.co.castano.MicroservicioSpringCommons.controller.CommonController;
-import com.co.castano.usuarios.service.AlumnoService;
+import com.co.castano.MicroservicioSpringCommons.service.CommonService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,16 +11,20 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-@RestController
-@RequestMapping("/api/alumnos")
-public class AlumnoController extends CommonController<Alumno, AlumnoService> {
+
+// GENERICOS -> E: entidad , S: Servicio que hereda de la clase generica service
+public class CommonController <E,S extends CommonService<E>> {
 
     @Autowired
-    private AlumnoService service;
+    protected S service;
+
+    public CommonController(S service){
+        this.service = service;
+    }
 
     // Inyectar la variable de entorno 'BALANCEADOR_TEST' en el controlador
     @Value("${config.balanceador.test}")
-    private String balanceadorTest;
+    protected String balanceadorTest;
 
     /* BALANCEADOR TEST
 
@@ -41,12 +44,6 @@ public class AlumnoController extends CommonController<Alumno, AlumnoService> {
      *
     * */
 
-    //se usa el super en el constructor de alumno controller para llamar a la libreria generica a la clase de common controller para hacer el tema del crud, ademas se le pasa como argumento el service de alumnos, ya que como sabemos en la clase genercia de controller se usa siempre super.findid etc... ya que exttiende de interfaz de CRUD
-    //el problema es que la clase generica no sabe que service usar, por eso aqui le decimos que use el service de alumnos, ESTO ES ESCENCIAL PARA QUE FUNCIONE LA LIBRERIA GENERICA
-    public AlumnoController(AlumnoService service){
-        super(service);
-    }
-
     @GetMapping("/balanceador-test")
     public ResponseEntity<?> balanceadorTest(){
         Map<String, Object> response= new HashMap<String, Object>();
@@ -56,22 +53,33 @@ public class AlumnoController extends CommonController<Alumno, AlumnoService> {
         return ResponseEntity.ok().body(response); // Retornamos la respuesta HTTP 200 con el body
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<?> editar(@RequestBody Alumno alumno,@PathVariable Long id){
-        Optional<Alumno> ob= service.findById(id);
 
-        if (ob.isEmpty()){
-            return ResponseEntity.noContent().build();
+    @GetMapping("/listar")
+    public ResponseEntity<?> listarAlumno(){
+        return ResponseEntity.ok().body(service.findAll()); // ResponseEntity.ok para indicar un estado 200, y body para devolver el cuerpo de la solicitud que se llama al metodo fiindAll de la interfaz de AlumnoService
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<?> ver(@PathVariable Long id){
+        Optional<E> ob = service.findById(id);
+
+        if(ob.isEmpty()){  //si esta vacio
+            return ResponseEntity.noContent().build(); //respuesta a solicitud exitosa pero no hay contenido para enviar en respuesta, no devuelve datos o no se encuentra, build es para construir la respuesta sin un cuerpo
         }
+        return ResponseEntity.ok().body(ob.get()); //metodo get obtiene el objeto alumno
+    }
 
-        Alumno alumnoBD = ob.get(); //objeto recuperado de la bd
-        alumnoBD.setNombre(alumno.getNombre()); // alumnoBD.setNombre actualiza valor del atributo que va a leerse de alumno que nos pasan en el cuerpo de solicitud que es getNombre para devovler el nombre
-        alumnoBD.setApellido(alumno.getApellido());
-        alumnoBD.setEmail(alumno.getEmail());
+    @PostMapping
+    public ResponseEntity<?> crear(@RequestBody E entity){
+        E alumnoDb = service.save(entity);
+        return ResponseEntity.status(HttpStatus.CREATED).body(alumnoDb);
+    }
 
-        Alumno updatedAlumno = service.save(alumnoBD); // Guarda los cambios
 
-        return ResponseEntity.ok().body(updatedAlumno); // Retorna el alumno actualizado
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> eliminar(@PathVariable Long id){
+        service.deleteById(id);
+        return ResponseEntity.noContent().build();
     }
 
 }

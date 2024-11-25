@@ -1,6 +1,7 @@
 package com.co.castano.usuarios.service;
 
-import com.co.castano.usuarios.entity.Alumno;
+
+import com.co.castano.MicroservicioCommonsService.entity.Alumno;
 import com.co.castano.usuarios.repository.AlumnoRepository;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,9 +12,7 @@ import java.util.Optional;
 @Service //logica del negocio
 public class AlumnoServiceImpl implements AlumnoService {
 
-    /**
-     * Descripción: inyección de dependencias con Autowired para interfaz alumnos repository que contiene metodos crud de CrudRepository
-     * */
+
     @Autowired
     private AlumnoRepository alumnoRepository;
 
@@ -23,9 +22,10 @@ public class AlumnoServiceImpl implements AlumnoService {
         return alumnoRepository.findAll();
     }
 
+
     @Override
     @Transactional(readOnly=true)
-    public Optional<Alumno> findById(long id) {
+    public Optional<Alumno> findById(Long id) {
         return alumnoRepository.findById(id);
     }
 
@@ -37,17 +37,20 @@ public class AlumnoServiceImpl implements AlumnoService {
 
     @Override
     @Transactional
-    public void deleteById(long id) {
+    public void deleteById(Long id) {
         alumnoRepository.deleteById(id);
     }
 
+
+
+
     /*
-    * @Transactional: Decorador que gestiona las transacciones, cuando hablamos de transaccciones nos referimos a que cada operación ( varias operaciones) deben completarse con exito para que la
-    * transacicón se confirme (commit) y si alguna operación falla todas las demas deben deshacerse(rollback), cuando se aplica el @Transactional spring gestiona estas transacciones para el metodo de la clase
-    *
-    * algunas propiedades son:
-    * -readOnly: indica si la transacción es de solo lectura, si es true entonces spring optimiza la transacicón para operaciones de solo lectura, optimiza el rendimiento para evitar otras operaciones
-    * de escritura en la bd
-    *
-    * */
+     * @Transactional: Decorador que gestiona las transacciones, cuando hablamos de transaccciones nos referimos a que cada operación ( varias operaciones) deben completarse con exito para que la
+     * transacicón se confirme (commit) y si alguna operación falla todas las demas deben deshacerse(rollback), cuando se aplica el @Transactional spring gestiona estas transacciones para el metodo de la clase
+     *
+     * algunas propiedades son:
+     * -readOnly: indica si la transacción es de solo lectura, si es true entonces spring optimiza la transacicón para operaciones de solo lectura, optimiza el rendimiento para evitar otras operaciones
+     * de escritura en la bd
+     *
+     * */
 }

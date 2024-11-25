@@ -1,4 +1,4 @@
-package com.co.castano.usuarios.entity;
+package com.co.castano.MicroservicioCommonsService.entity;
 
 import jakarta.persistence.*;
 import java.util.Date;
@@ -42,6 +42,8 @@ public class Alumno {
         this.createAt = createAt;
     }
 
+    //El constructor vacío es necesario porque JPA (a través de Hibernate) utiliza técnicas como la reflexión para crear instancias de las entidades cuando interactúa con la base de datos (por ejemplo, al recuperar datos).
+    //Si no existe un constructor vacío, JPA lanzará una excepción al intentar instanciar la entidad. Esto se debe a que necesita crear una instancia sin parámetros y luego llenar sus propiedades con los valores obtenidos de la base de datos
     public Alumno() {
 
     }
@@ -85,15 +87,29 @@ public class Alumno {
     public void setCreateAt(Date createAt) {
         this.createAt = createAt;
     }
+    /**
+     * @equals: El método equals(Object obj) en Java se utiliza para comparar dos objetos y determinar si son "iguales". Por defecto, la implementación del método equals en la clase Object (de la cual heredan todas las clases en Java)
+     * compara las referencias de memoria de los objetos, es decir, verifica si los dos objetos son exactamente la misma instancia.
+     *
+     * */
 
     @Override
-    public String toString() {
-        return "Alumno{" +
-                "Id=" + Id +
-                ", nombre='" + nombre + '\'' +
-                ", apellido='" + apellido + '\'' +
-                ", email='" + email + '\'' +
-                ", createAt=" + createAt +
-                '}';
+    public boolean equals(Object obj) {
+        // Verificar si son el mismo objeto en memoria
+        if (this == obj) {
+            return true;  // Si ambos apuntan al mismo objeto, son iguales
+        }
+
+        // Verificar si el objeto es una instancia de la clase Alumno
+        if (!(obj instanceof Alumno)) {
+            return false;  // Si el objeto no es una instancia de Alumno, no son iguales
+        }
+
+
+        Alumno a = (Alumno) obj;  // cast, Convertir el objeto obj a un objeto Alumno
+
+        // Comparar Id
+        return this.Id != null && this.Id.equals(a.getId());  // Si el Id no es null, comparamos los Ids
     }
+
 }
